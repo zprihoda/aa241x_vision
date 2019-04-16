@@ -22,6 +22,10 @@ find_package(OpenCV REQUIRED)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}/usr/local/lib/cmake)
 find_package(raspicam REQUIRED)
 
+# add the apriltag library
+add_library(apriltag_lib SHARED IMPORTED)
+set_property(TARGET apriltag_lib PROPERTY IMPORTED_LOCATION /usr/local/lib/libapriltag.so)
+
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -169,6 +173,7 @@ target_link_libraries(vision_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBS}
   ${raspicam_CV_LIBS}
+  apriltag_lib
 )
 
 target_link_libraries(display_node
