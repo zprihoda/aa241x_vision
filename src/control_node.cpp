@@ -1,19 +1,7 @@
 /**
  * this node will contain a skeleton for students for the control node.
  *
- * NOTE: may want to rename this node... there will be 2 control nodes I think
- * 	- landing control node
- * 	- mission control node
- *
- * Though, they don't necessarily need to be in separate nodes, they could all
- * be in the same node with a state machine running and helping to state what
- * elements of the node should be running.
- *
- * I don't necessarily want to dictate how they define their nodes....
- * but I do want to give them an example.
- *
- * Maybe give the example but caution/note that this may not be the best way
- * to do it, there are choices to be made by the teams
+ * this is still in development!
  */
 
 
@@ -21,11 +9,11 @@
 
 
 
-class AA241xControlNode {
+class ControlNode {
 
 public:
 
-	AA241xControlNode();
+	ControlNode();
 
 	int run();
 
@@ -61,29 +49,29 @@ private:
 };
 
 
-AA241xControlNode::AA241xControlNode() {
+ControlNode::ControlNode() {
 
 
 	// subscribe to the desired topics
-	_beacon_meas_sub = _nh.subscribe<aa241x_mission::Measurement>("measurement", 10, &AA241xControlNode::beaconMeasCallback, this);
-	_ap_range_sub = _nh.subscribe<aa241x_student::APRange>("ap_range", 10, &AA241xControlNode::apRangeCallback, this);
+	_beacon_meas_sub = _nh.subscribe<aa241x_mission::Measurement>("measurement", 10, &ControlNode::beaconMeasCallback, this);
+	_ap_range_sub = _nh.subscribe<aa241x_student::APRange>("ap_range", 10, &ControlNode::apRangeCallback, this);
 
 }
 
 // TODO: I think I am going to remove all beacon measurement related content from this node
 // TODO: create another node for the path planning that takes in this information
-void AA241xControlNode::beaconMeasCallback(const aa241x_mission::Measurement::ConstPtr& msg) {
+void ControlNode::beaconMeasCallback(const aa241x_mission::Measurement::ConstPtr& msg) {
 	// TODO: decide what to do with the beacon measurement here
 }
 
-void AA241xControlNode::apRangeCallback(const aa241x_student::APRange::ConstPtr& msg) {
+void ControlNode::apRangeCallback(const aa241x_student::APRange::ConstPtr& msg) {
 	// TODO: decide what to do with the range measurement here
 	// TODO: basically writing some of the controller in this callback
 }
 
 
 
-void AA241xControlNode::run() {
+void ControlNode::run() {
 
 	// TODO: copy the code from my research here
 	// TODO: should send a 0 motion command until in offboard mode and then
@@ -100,7 +88,7 @@ void AA241xControlNode::run() {
 int main(int argc, char **argv) {
 
 	// initialize th enode
-	ros::init(argc, argv, "aa241x_control_node");
+	ros::init(argc, argv, "control_node");
 
 	// get parameters from the launch file which define some mission
 	// settings
@@ -108,7 +96,7 @@ int main(int argc, char **argv) {
 	// TODO: determine settings
 
 	// create the node
-	AA241xControlNode node();
+	ControlNode node();
 
 	// run the node
 	return node.run();
