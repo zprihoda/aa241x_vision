@@ -49,7 +49,3 @@ Parameters for the node:
  - `frame_width`: integer number of pixels for the width of the image frame
  - `frame_height`: integer number of pixels of the height of the image frame
 
-
-### Control Node ###
-
-**NOTE:** this example is not yet complete!
