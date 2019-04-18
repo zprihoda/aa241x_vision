@@ -2,6 +2,39 @@
 
 This ROS package contains some example nodes (and code) for the teams of Spring 2019's AA241x course.
 
+### Getting the Code ###
+
+This is a ROS package that has been designed with the `catkin_ws` that is used with ROS Melodic.  To correctly get and use the code, make sure to clone this repository into the `catkin_ws` directory.
+
+For example:
+
+```sh
+cd ~/catkin_ws/src
+git clone https://github.com/aa241x/aa241x_student.git
+```
+
+Once you have it cloned, make sure to build it:
+
+```sh
+cd ~/catkin_ws/
+catkin_make
+```
+
+### Running the Code ###
+
+The code already has an example launch file to run the PiCam test with displaying the video from the camera.
+
+To run using the launch file:
+
+```sh
+cd ~/catkin_ws/
+source devel/setup.bash
+roslaunch aa241x_student vision_only.launch
+```
+
+**NOTE:** you can also run the `vision_node` only using `rosrun` if desired.  To do so, check out the [ROS tutorials](http://wiki.ros.org/ROS/Tutorials) to familiarize yourself with the `rosrun` interface.
+
+
 ### Dependencies ###
 
 This code has the following dependencies:
