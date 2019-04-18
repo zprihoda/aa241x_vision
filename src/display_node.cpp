@@ -77,7 +77,7 @@ private:
 
 
 
-DisplayName::DisplayNode(int frame_width, int frame_height) :
+DisplayNode::DisplayNode(int frame_width, int frame_height) :
 _frame_width(frame_width),
 _frame_height(frame_height),
 _it(_nh)
