@@ -2,6 +2,17 @@
 
 This ROS package contains some example nodes (and code) for the teams of Spring 2019's AA241x course.
 
+### Dependencies ###
+
+This code has the following dependencies:
+
+ - [RaspiCam C++](https://github.com/cedricve/raspicam) - this is a library that enables interfacing with the PiCam using C++.
+
+ - [APrilTag Library](https://github.com/AprilRobotics/apriltag) - this is the original AprilTag library in C put out by the April Robotics Lab.  **This is not the only library out there and may not be the best performance library.**
+
+
+**NOTE:** these dependencies should already be installed on the Raspberry Pi 3B+ received by the teams.
+
 ### ROS ###
 
 For a more detailed explanation of ROS, the elements of a package, and some of the code elements, check out the [ROS Tutorials page](http://wiki.ros.org/ROS/Tutorials) that contains a lot of very useful information (tutorials 2-6, 8, 10, and 11 should be read).  In addition to the tutorials, an effort has been made to comment the code to help explain what some of the elements are doing.
