@@ -77,11 +77,6 @@ void ControlNode::run() {
 	// TODO: should send a 0 motion command until in offboard mode and then
 	// should start sending commands as desired to go where desired
 
-	// TODO: maybe path planning should be its own node, but again I'm thinking
-	// that is an exercise left to the students
-	// this skeleton code should be enough to get them to understand what is
-	// going on and how to handle other element (such as path planning)
-
 
 }
 
