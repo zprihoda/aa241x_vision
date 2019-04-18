@@ -1,46 +1,52 @@
 /**
- * this file will contain the skeleton / example node for reading from the picam
- * using the C++ library
- *
- * maybe I'll also have it demonstrate the ability to find the AprilTag in the
- * image
- *
- * TODO: figure out how much the latency is and see if it will really cause
- * problems.  I think if they have an estimator running for the position of the
- * truck bed, it will help with any latency??? -> actually probably not...
+ * Example node for reading from the Raspberry PiCam and processing it for
+ * AprilTag data.
  */
 
 #include <iostream>
 
 #include <ros/ros.h>
 
+// raspberry pi cam and image handling
 #include <raspicam/raspicam_cv.h>
 #include <image_transport/image_transport.h>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 
+// apriltag library
 extern "C" {
 #include <apriltag/apriltag.h>
 #include <apriltag/tag16h5.h>
 }
 
 
-
-// TODO: remove aa241x from the node name
+/**
+ * The node contents in wrapped into a class to allow for easier handling of
+ * shared information between the callbacks and main loop
+ */
 class VisionNode {
 
 public:
 
+	/**
+	 * constructor for the vision node
+	 * @param frame_width   the integer width of the image frame in pixels
+	 * @param frame_height  the integer height of the image frame in pixels
+	 * @param publish_image boolean flag for whether or not to publish the images
+	 */
 	VisionNode(int frame_width, int frame_height, bool publish_image);
 
 
-	// main loop
+	/**
+	 * the main loop to be run for this node (called by the `main` function)
+	 * @return exit code
+	 */
 	int run();
 
 
 private:
 
-	// node handler
+	// node handler and image transport handler
 	ros::NodeHandle _nh;
 	image_transport::ImageTransport _it;
 
@@ -51,29 +57,12 @@ private:
 	bool _publish_image;	// true if the image data should be published
 
 	// camera stuff
-	raspicam::RaspiCam_Cv _camera;	// TODO: use the correct class name here
-
-	// april tag stuff
-	//APDetector _detector;	// TODO: use the correct class name here
-
-	// subscribers
-	// TODO: figure out what subscriber may be desired
-
+	raspicam::RaspiCam_Cv _camera;	// the camera object
 
 	// publishers
-	ros::Publisher _tag_relative_position_pub;	// the relative position vector to the truck
-	ros::Publisher _tag_details_pub;			// the raw tag details (for debugging)
-	image_transport::Publisher _image_pub;
-
-	// TODO: add a publisher of the image frame -> for the display node
-
-	// callbacks
-	// TODO: figure out what might be needed
-
-
-	// helper functions
-	// TODO: any helper functions here
-
+	ros::Publisher _tag_relative_position_pub;	// the relative position vector to the truck (NOT IMPLEMENTED)
+	ros::Publisher _tag_details_pub;			// the raw tag details (for debugging) (NOT IMPLEMENTED)
+	image_transport::Publisher _image_pub;		// the raw annotated image (for debugging)
 };
 
 
@@ -85,19 +74,13 @@ _it(_nh)
 	_image_pub = _it.advertise("image", 1);
 
     // configure the camera
-    _camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);
-    _camera.set(cv::CAP_PROP_FRAME_WIDTH, _frame_width);
-	_camera.set(cv::CAP_PROP_FRAME_HEIGHT, _frame_height);
-	_camera.set(cv::CAP_PROP_FORMAT, CV_8UC1);
-
+    _camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);				// 8 bit image data -> means grayscale image
+    _camera.set(cv::CAP_PROP_FRAME_WIDTH, _frame_width);	// set the width of the image
+	_camera.set(cv::CAP_PROP_FRAME_HEIGHT, _frame_height);	// set the height of the image
 }
 
 
 int VisionNode::run() {
-
-	// TODO: set up the tag detector
-	// TODO: determine if the setup is best in the constructor or here
-	// TODO: try another one of the apriltag libraries???
 
     // open the camera
     ROS_INFO("opening camera");
@@ -108,8 +91,10 @@ int VisionNode::run() {
     }
 
     // apriltag handling setup
-	apriltag_family_t *tf = tag16h5_create();
-	
+    // see readme for details: https://github.com/AprilRobotics/apriltag
+	apriltag_family_t *tf = tag16h5_create();	// specify the tag family
+
+	// initialize the detector and some attributes for detection
 	apriltag_detector_t *td = apriltag_detector_create();
     apriltag_detector_add_family(td, tf);
     td->quad_decimate = 3.0;
@@ -120,18 +105,14 @@ int VisionNode::run() {
 	ros::Time image_time; 	// timestamp of when the image was grabbed
 	cv::Mat frame_gray;		// the image in grayscale
 
-
-	// loop while the node should be running
+	// loop forever while the node should be running
 	while (ros::ok()) {
 
-		// TODO: probably want to have a mission state machine running so that
-		// this processing is not occuring throughout the entire flight!!!
-
-		// TODO: grab the frame from the camera
+		// grab the frame from the camera
+		// see readme for details: https://github.com/cedricve/raspicam
         _camera.grab();
 		_camera.retrieve(frame_gray);
 		image_time = ros::Time::now();
-
 
         // Make an image_u8_t header for the Mat data to pass over to the april
         // tag detector
@@ -140,18 +121,14 @@ int VisionNode::run() {
             .stride = frame_gray.cols,
             .buf = frame_gray.data
         };
-		
+
+        // run the detector
 		zarray_t *detections = apriltag_detector_detect(td, &im);
         ROS_INFO("%d tags detected", zarray_size(detections));
 
+        // NOTE: this is where the relative vector should be computed
 
-		// TODO: compute the relative vector between me and the AprilTag
-		// NOTE: this will be left entirely to the students I think
-		// NOTE: I feel like it would be too easy to just give them that code
-
-		// TODO: publish the detection information
-
-
+        // if flagged to do so, annotate and publish the image
 		if (_publish_image) {
             // Draw detection outlines
             for (int i = 0; i < zarray_size(detections); i++) {
@@ -193,9 +170,10 @@ int VisionNode::run() {
         // clean up the detections
         zarray_destroy(detections);
 
-
-		// TODO: if there are no subscribers, I'm not sure this is needed...
-		// though I wonder if it is needed from a time sync point of view
+        // call spin once to trigger any callbacks
+        // while there are none specified so far, it's good practice to just
+        // throw this in so if/when you add callbacks you don't spend hours
+        // trying to figure out why they aren't being called!
 		ros::spinOnce();
 	}
 
@@ -210,6 +188,7 @@ int VisionNode::run() {
 }
 
 
+// the main function
 
 
 int main(int argc, char **argv) {
@@ -217,10 +196,8 @@ int main(int argc, char **argv) {
 	// initialize th enode
 	ros::init(argc, argv, "vision_node");
 
-	// get parameters from the launch file which define some mission
-	// settings
+	// get parameters from the launch file which define some camera settings
 	ros::NodeHandle private_nh("~");
-	// TODO: determine settings
 	int frame_width, frame_height;
 	bool publish_image;
 	private_nh.param("frame_width", frame_width, 640);
