@@ -1,6 +1,6 @@
-# AA241x Student Example Code #
+# AA241x Vision Example Code #
 
-This ROS package contains some example nodes (and code) for the teams of Spring 2019's AA241x course.
+This ROS package contains some example vision related nodes (and code) for the teams of Spring 2019's AA241x course.
 
 ### Getting the Code ###
 
@@ -10,7 +10,7 @@ For example:
 
 ```sh
 cd ~/catkin_ws/src
-git clone https://github.com/aa241x/aa241x_student.git
+git clone https://github.com/aa241x/aa241x_vision.git
 ```
 
 Once you have it cloned, make sure to build it:
@@ -29,7 +29,7 @@ To run using the launch file:
 ```sh
 cd ~/catkin_ws/
 source devel/setup.bash
-roslaunch aa241x_student vision_only.launch
+roslaunch aa241x_vision vision_only.launch
 ```
 
 **NOTE:** you can also run the `vision_node` only using `rosrun` if desired.  To do so, check out the [ROS tutorials](http://wiki.ros.org/ROS/Tutorials) to familiarize yourself with the `rosrun` interface.
@@ -57,8 +57,6 @@ This package contains the following nodes (see each of the corresponding section
  - [Vision Node](#vision-node) - this node is responsible for reading in the images from the PiCam and passing the images through an APrilTag detector.
 
  - [Display Node](#display-node) - this node is responsible for displaying the annotated images from the vision node.
-
- - [Control Node](#control-node) - this node is responsible for sending control commands to the pixhawk autopilot through mavros.
 
 **NOTE:** nodes can have parameters that define or alter some of the functionality when the node is run, which is being leveraged in the vision and display nodes for adjusting the size of the image being shown.  For more details on node parameters, check out [this ROS help page on Nodes](http://wiki.ros.org/Nodes).
 
