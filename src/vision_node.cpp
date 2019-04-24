@@ -19,6 +19,9 @@ extern "C" {
 #include <apriltag/tag16h5.h>
 }
 
+// topics
+#include <geometry_msgs/PoseStamped.h>
+
 
 /**
  * The node contents in wrapped into a class to allow for easier handling of
@@ -71,7 +74,10 @@ _frame_width(frame_width),
 _frame_height(frame_height),
 _it(_nh)
 {
-	_image_pub = _it.advertise("image", 1);
+	// publishers
+	_image_pub = _it.advertise("image", 1);	// NOTE: should not be used in flight
+	_tag_relative_position_pub = _nh.advertise<geometry_msgs::PoseStamped>("landing_pose", 1);	// EXAMPLE publishing
+
 
     // configure the camera
     _camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);				// 8 bit image data -> means grayscale image
