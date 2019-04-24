@@ -6,6 +6,8 @@ This ROS package contains some example vision related nodes (and code) for the t
 
 This is a ROS package that has been designed with the `catkin_ws` that is used with ROS Melodic.  To correctly get and use the code, make sure to clone this repository into the `catkin_ws` directory.
 
+NOTE: it is recommended that you fork the repository to be able to use it as a skeleton for your own code.  To fork the repository, click the **fork** button at the top of this page.
+
 For example:
 
 ```sh
