@@ -80,7 +80,7 @@ _it(_nh)
 
 
     // configure the camera
-    _camera.set(CV_CAP_PROP_FORMAT, CV_8UC1);				// 8 bit image data -> means grayscale image
+    _camera.set(cv::CAP_PROP_FORMAT, CV_8UC1);				// 8 bit image data -> means grayscale image
     _camera.set(cv::CAP_PROP_FRAME_WIDTH, _frame_width);	// set the width of the image
 	_camera.set(cv::CAP_PROP_FRAME_HEIGHT, _frame_height);	// set the height of the image
 }
