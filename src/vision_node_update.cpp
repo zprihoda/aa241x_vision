@@ -17,8 +17,7 @@
 #include <cmath>
 
 #include <ros/ros.h>
-#include <std_msgs/Int32MultiArray.h>
-#include <std_msgs/Float32MultiArray.h>
+#include <aa241x_student/tag_info.h>
 
 #include <raspicam/raspicam_cv.h>
 #include <image_transport/image_transport.h>
@@ -75,9 +74,7 @@ private:
 
 
 	// publishers
-	ros::Publisher _tag_position_pub;	// the relative position vector to the truck
-    ros::Publisher _tag_rotation_pub;	// the relative rotation vector to the truck
-    ros::Publisher _tag_id_pub;	// the relative rotation vector to the truck
+	ros::Publisher _tag_info_pub;	// the tag info
 	ros::Publisher _tag_details_pub;			// the raw tag details (for debugging)
 	image_transport::Publisher _image_pub;
 
@@ -89,11 +86,9 @@ private:
 
 	// helper functions
 	// TODO: any helper functions here
-    
+
     // publish the translation and rotation matrix
-    void publish_id();
-    void publish_position();
-    void publish_rotation();
+    void publish_info();
 
 };
 
@@ -111,47 +106,32 @@ _it(_nh)
 	_camera.set(cv::CAP_PROP_FRAME_HEIGHT, _frame_height);
 	_camera.set(cv::CAP_PROP_FORMAT, CV_8UC1);
 
+    _tag_info_pub = _nh.advertise<aa241x_student::tag_info>("tag_information", 5);
 }
 
 
-void VisionNode::publish_id(){
-    std_msgs::Int32MultiArray msg;
+void VisionNode::publish_info(){
+    aa241x_student::tag_info msg;
     std::vector<int> _tag_id;
-    for(std::map<int, std::vector<float>>::const_iterator it = _median_tag_position.begin(); it != _median_tag_position.end(); it ++){
-        _tag_id.push_back(it->first);
-    }
-    msg.data = _tag_id;
-    _tag_id_pub.publish(msg);
-}
-
-
-void VisionNode::publish_position(){
-    std_msgs::Float32MultiArray msg;
     std::vector<float> _position_all;
     std::vector<float> _position_point;
+    std::vector<float> _rotation_all;
+    std::vector<float> _rotation_point;
     for(std::map<int, std::vector<float>>::const_iterator it = _median_tag_position.begin(); it != _median_tag_position.end(); it ++){
+        _tag_id.push_back(it->first);
         _position_point = it -> second;
         for(int j = 0; j < _position_point.size(); j ++){
             _position_all.push_back(_position_point[j]);
         }
-    }
-    msg.data = _position_all;
-    _tag_position_pub.publish(msg);
-}
-
-
-void VisionNode::publish_rotation(){
-    std_msgs::Float32MultiArray msg;
-    std::vector<float> _rotation_all;
-    std::vector<float> _rotation_point;
-    for(std::map<int, std::vector<float>>::const_iterator it = _median_tag_rotation.begin(); it != _median_tag_rotation.end(); it ++){
-        _rotation_point = it -> second;
+        _rotation_point = _median_tag_rotation[it->first];
         for(int j = 0; j < _rotation_point.size(); j ++){
             _rotation_all.push_back(_rotation_point[j]);
         }
     }
-    msg.data = _rotation_all;
-    _tag_rotation_pub.publish(msg);
+    msg.id = _tag_id;
+    msg.position = _position_all;
+    msg.rotation = _rotation_all;
+    _tag_info_pub.publish(msg);
 }
 
 
@@ -171,7 +151,7 @@ int VisionNode::run() {
 
     // apriltag handling setup
 	apriltag_family_t *tf = tag16h5_create();
-	
+
 	apriltag_detector_t *td = apriltag_detector_create();
     apriltag_detector_add_family(td, tf);
     td->quad_decimate = 3.0;
@@ -201,16 +181,16 @@ int VisionNode::run() {
         fy = 751.35508127802007;
         cy = 360;
     }
-    
+
     int _collect_state = 0;
     double collect_start_time;
-    
+
     /*
     std::map<int, std::vector<std::vector<float>>> _tag_position;
     std::map<int, std::vector<int>> _tag_count;
     std::map<int, std::vector<float>> _final_tag_position;*/
 
-    
+
 
 	// loop while the node should be running
 	while (ros::ok()) {
@@ -231,7 +211,7 @@ int VisionNode::run() {
             .stride = frame_gray.cols,
             .buf = frame_gray.data
         };
-		
+
 		zarray_t *detections = apriltag_detector_detect(td, &im);
         //ROS_INFO("%d tags detected", zarray_size(detections));
 
@@ -259,7 +239,7 @@ int VisionNode::run() {
 
 
 		if (_publish_image) {
-            
+
             // Draw detection outlines
             for (int i = 0; i < zarray_size(detections); i++) {
                 apriltag_detection_t *det;
@@ -293,9 +273,9 @@ int VisionNode::run() {
                 std::vector<float> rotation{pose.R->data[0], pose.R->data[1], pose.R->data[2], pose.R->data[3], pose.R->data[4], pose.R->data[5], pose.R->data[6], pose.R->data[7], pose.R->data[8]};
                 //ROS_INFO("!!!!!!!!!!!!@@##$$%%^^^^^$#@@");
                 //ROS_INFO("%d %.3f %.3f %.3f",det->id,trans_x,trans_y, trans_z);
-                
+
                 /*
-                //clustering data by distance threshold 
+                //clustering data by distance threshold
                 std::vector<float> prev_position;
                 float distance;
                 bool update;
@@ -372,7 +352,7 @@ int VisionNode::run() {
 
         // clean up the detections
         zarray_destroy(detections);
-        
+
         //set time threshold for collecting data
         ros::Time time = ros::Time::now();
         if (_collect_state == 0){
@@ -404,8 +384,8 @@ int VisionNode::run() {
                             median_position.push_back(x_data[x_data.size()/2]);
                         }
                     }
-                    _median_tag_position[_tag_numbers[j]] = median_position; 
-                    
+                    _median_tag_position[_tag_numbers[j]] = median_position;
+
                     std::vector<float> median_rotation;
                     for(int l = 0 ; l <9; l ++){
                         std::vector<float> x_data;
@@ -420,7 +400,7 @@ int VisionNode::run() {
                             median_rotation.push_back(x_data[x_data.size()/2]);
                         }
                     }
-                    _median_tag_rotation[_tag_numbers[j]] = median_rotation;       
+                    _median_tag_rotation[_tag_numbers[j]] = median_rotation;
                 }
             }
 
@@ -428,36 +408,35 @@ int VisionNode::run() {
             //float format_distance = std::sqrt(std::pow((_final_tag_position[0][0] - _final_tag_position[3][0]), 2.0) + std::pow((_final_tag_position[0][1] - _final_tag_position[3][1]), 2.0) + std::pow((_final_tag_position[0][2] - _final_tag_position[3][2]), 2.0));
             //format_distance = 0.14;
 
-            if (true){ 
+            if (true){
                 _collect_state = 0;
                 ROS_INFO("Found resonable tags");
                 /*
                 ROS_INFO("%d %d", _tag_position[0].size(), _tag_position[3].size());
                 _tag_position.clear();
                 _tag_count.clear();
-                ROS_INFO("Average of cluster"); 
+                ROS_INFO("Average of cluster");
                 ROS_INFO("%d %.3f %.3f %.3f",_tag_numbers[0],_final_tag_position[0][0],_final_tag_position[0][1], _final_tag_position[0][2]);
-                ROS_INFO("%d %.3f %.3f %.3f",_tag_numbers[1],_final_tag_position[3][0],_final_tag_position[3][1], _final_tag_position[3][2]); 
+                ROS_INFO("%d %.3f %.3f %.3f",_tag_numbers[1],_final_tag_position[3][0],_final_tag_position[3][1], _final_tag_position[3][2]);
                 _final_tag_position.clear();*/
                 for(int j = 0; j < _tag_numbers.size(); j ++){
                     if(_tag_position[_tag_numbers[j]].size() != 0){
                     ROS_INFO("Median of all");
                     ROS_INFO("%d %.3f %.3f %.3f",_tag_numbers[j],_median_tag_position[_tag_numbers[j]][0],_median_tag_position[_tag_numbers[j]][1], _median_tag_position[_tag_numbers[j]][2]);
-                    
+
                     ROS_INFO("%.3f %.3f %.3f",_median_tag_rotation[_tag_numbers[j]][0],_median_tag_rotation[_tag_numbers[j]][1], _median_tag_rotation[_tag_numbers[j]][2]);
-                    ROS_INFO("%.3f %.3f %.3f",_median_tag_rotation[_tag_numbers[j]][3],_median_tag_rotation[_tag_numbers[j]][4], _median_tag_rotation[_tag_numbers[j]][5]); 
-                    ROS_INFO("%.3f %.3f %.3f",_median_tag_rotation[_tag_numbers[j]][6],_median_tag_rotation[_tag_numbers[j]][7], _median_tag_rotation[_tag_numbers[j]][8]); 
+                    ROS_INFO("%.3f %.3f %.3f",_median_tag_rotation[_tag_numbers[j]][3],_median_tag_rotation[_tag_numbers[j]][4], _median_tag_rotation[_tag_numbers[j]][5]);
+                    ROS_INFO("%.3f %.3f %.3f",_median_tag_rotation[_tag_numbers[j]][6],_median_tag_rotation[_tag_numbers[j]][7], _median_tag_rotation[_tag_numbers[j]][8]);
                     }
                 }
-                publish_position();
-                publish_rotation();
+                publish_info();
                 _median_tag_position.clear();
                 _tag_position.clear();
                 _median_tag_rotation.clear();
-                _tag_rotation.clear();                
-            }          
+                _tag_rotation.clear();
+            }
         }
-        
+
 		// TODO: if there are no subscribers, I'm not sure this is needed...
 		// though I wonder if it is needed from a time sync point of view
 		ros::spinOnce();
