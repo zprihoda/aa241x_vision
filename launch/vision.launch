@@ -1,8 +1,8 @@
 <launch>
 
 	<!-- launch file level arguments (can be specified as command line arguments on launch) -->
-	<arg name="frame_width" default="640" doc="the width of the image frame to read and display in [px]" />
-	<arg name="frame_height" default="480" doc="the height of the image frame to read and display in [px]" />
+	<arg name="frame_width" default="1280" doc="the width of the image frame to read and display in [px]" />
+	<arg name="frame_height" default="1280" doc="the height of the image frame to read and display in [px]" />
 
 	<!-- start the vision node with specifying the frame width and height and enabling the video display (publishes images for the display node to use) -->
     <node pkg="aa241x_vision" type="vision_node" name="vision_node" output="screen">
@@ -16,5 +16,7 @@
         <param name="frame_width" value="$(arg frame_width)" />
         <param name="frame_height" value="$(arg frame_height)" />
     </node>
+
+    <node pkg="aa241x_vision" type="landing.py" name="landing_node" output="screen"/>
 
 </launch>
