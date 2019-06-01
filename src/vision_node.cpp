@@ -22,6 +22,7 @@
 extern "C" {
 #include <apriltag/apriltag.h>
 #include <apriltag/tag16h5.h>
+#include <apriltag/tag36h11.h>
 #include <apriltag/apriltag_pose.h>
 }
 
@@ -72,7 +73,7 @@ private:
     std::map<int, std::vector<std::vector<float>>> _tag_rotation;
     std::map<int, std::vector<float>> _median_tag_rotation;
 
-    std::vector<int> _tag_numbers{0, 1, 2, 3, 17};
+    std::vector<int> _tag_numbers{0, 1, 2, 3, 9};
 
 	// camera stuff
 	raspicam::RaspiCam_Cv _camera;	// the camera object
@@ -141,10 +142,12 @@ int VisionNode::run() {
     // apriltag handling setup
     // see readme for details: https://github.com/AprilRobotics/apriltag
 	apriltag_family_t *tf = tag16h5_create();	// specify the tag family
+    apriltag_family_t *tf_2 = tag36h11_create();
 
 	// initialize the detector and some attributes for detection
 	apriltag_detector_t *td = apriltag_detector_create();
     apriltag_detector_add_family(td, tf);
+    apriltag_detector_add_family(td, tf_2);
     td->quad_decimate = 3.0;
     td->quad_sigma = 0.0;
     td->refine_edges = 0;
@@ -214,8 +217,9 @@ int VisionNode::run() {
 
                 info.det = det;
 		        if (std::find(_tag_numbers.begin(), _tag_numbers.end(), det->id) == _tag_numbers.end()){continue;}
-                if (det->id == 17){info.tagsize = 0.20;}
-                else if (det->id == 0 || det->id == 1 || det->id == 2 || det->id == 3){info.tagsize = 0.09;}
+                if (det->id == 9 && det->family->nbits == 36){info.tagsize = 0.20;}
+                else if ((det->id == 0 || det->id == 1 || det->id == 2 || det->id == 3) && det->family->nbits == 16){info.tagsize = 0.09;}
+                else {continue;}
 		        apriltag_pose_t pose;
 		        double err = estimate_tag_pose(&info, &pose);
 
