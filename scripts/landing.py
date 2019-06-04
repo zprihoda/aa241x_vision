@@ -117,7 +117,7 @@ class Landing():
                 elif _selected_id == 3:
                     self.target_x = _position[0] + 0.25 * math.cos(tag_yaw)
                     self.target_y = _position[1] + 0.25 * math.sin(tag_yaw)
-                elif _selected_id == 17:
+                elif _selected_id == 9:
                     self.target_x = _position[0] + 0.345 * math.sin(tag_yaw)
                     self.target_y = _position[1] - 0.345 * math.cos(tag_yaw)
 
