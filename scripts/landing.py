@@ -19,9 +19,10 @@ formation[(1, 3)] = 0.25 * math.sqrt(2)
 formation[(2, 3)] = 0.25 * 2
 formation[(0, 9)] = 0.345
 formation[(1, 9)] = 0.345 + 0.25
-formation[(2, 9)] = math.sqrt(0.345**2 + 0.25**2)
-formation[(3, 9)] = math.sqrt(0.345**2 + 0.25**2)
+formation[(2, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
+formation[(3, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
 center_id = 0
+
 
 class Landing():
     def __init__(self):
@@ -31,8 +32,8 @@ class Landing():
         self.tag_id = []
         self.tag_position = []
         self.tag_rotation = []
-        
-        self.target_id = None
+
+        self.target_id = -1
         self.target_x = 0
         self.target_y = 0
         self.target_z = 0
@@ -46,7 +47,7 @@ class Landing():
 
     ## Callbacks
     def taginfoCallback(self, msg):
-        self.tag_id = []        
+        self.tag_id = []
         self.tag_position = dict()
         self.tag_rotation = dict()
 
@@ -58,12 +59,12 @@ class Landing():
             _tag_yaw = math.atan2(_tag_rotation[3], _tag_rotation[0])
             _tag_pitch = math.atan2(-_tag_rotation[6], math.sqrt(_tag_rotation[7] ** 2 + _tag_rotation[8] ** 2))
             _tag_roll = math.atan2(_tag_rotation[7], _tag_rotation[8])
-            
+
             if abs(_tag_pitch) < 0.16 and abs(_tag_roll) < 0.16:
                 self.tag_id.append(_tag_id)
                 self.tag_position[_tag_id] = _tag_position
                 self.tag_rotation[_tag_id] = [_tag_yaw, _tag_pitch, _tag_roll]
-        
+
         self.tag_id.sort()
 
     ## Main Loop for Navigator
@@ -76,7 +77,9 @@ class Landing():
                         _key = (self.tag_id[i], self.tag_id[j])
                         _position_i = self.tag_position[self.tag_id[i]]
                         _position_j = self.tag_position[self.tag_id[j]]
-                        _distance_ij = math.sqrt((_position_i[0] - _position_j[0])**2 + (_position_i[1] - _position_j[1])**2 + (_position_i[2] - _position_j[2])**2)
+                        _distance_ij = math.sqrt(
+                            (_position_i[0] - _position_j[0]) ** 2 + (_position_i[1] - _position_j[1]) ** 2 + (
+                                    _position_i[2] - _position_j[2]) ** 2)
                         if abs(_distance_ij - formation[_key]) > 0.10:
                             formation_match = False
 
@@ -97,7 +100,6 @@ class Landing():
                 _position = self.tag_position[self.tag_id[0]]
                 _rotation = self.tag_rotation[self.tag_id[0]]
 
-            
             if formation_match:
                 self.target_id = _selected_id
                 tag_yaw = _rotation[0]
@@ -119,25 +121,30 @@ class Landing():
                     self.target_x = _position[0] + 0.345 * math.sin(tag_yaw)
                     self.target_y = _position[1] - 0.345 * math.cos(tag_yaw)
 
-
     ## Process Functions
     def publish(self):
         """ publish target point for landing """
         msg = Targetpoint()
-        
-        
-        msg.id = self.target_id
-        msg.x = - self.target_y
-        msg.y = - self.target_x
-        msg.z = self.target_z
-        msg.yaw = - self.target_yaw - math.pi/2
-        
-        
+
+        if self.target_id == -1:
+            msg.id = -1
+            msg.x = 0
+            msg.y = 0
+            msg.z = 0
+            msg.yaw = 0
+        else:
+            msg.id = self.target_id
+            msg.x = - self.target_y
+            msg.y = - self.target_x
+            msg.z = self.target_z
+            msg.yaw = - self.target_yaw - math.pi / 2
+
+        self.target_id = -1
 
         self.target_pub.publish(msg)
 
     def run(self):
-        rate = rospy.Rate(10)  # 10 Hz
+        rate = rospy.Rate(2)  # 10 Hz
         while not rospy.is_shutdown():
             self.landcommand()
             self.publish()
