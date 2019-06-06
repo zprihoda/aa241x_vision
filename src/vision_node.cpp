@@ -73,7 +73,7 @@ private:
     std::map<int, std::vector<std::vector<float>>> _tag_rotation;
     std::map<int, std::vector<float>> _median_tag_rotation;
 
-    std::vector<int> _tag_numbers{0, 1, 2, 3, 9};
+    std::vector<int> _tag_numbers{0, 1, 2, 3, 5, 9};
 
 	// camera stuff
 	raspicam::RaspiCam_Cv _camera;	// the camera object
@@ -218,6 +218,7 @@ int VisionNode::run() {
                 info.det = det;
 		        if (std::find(_tag_numbers.begin(), _tag_numbers.end(), det->id) == _tag_numbers.end()){continue;}
                 if (det->id == 9 && det->family->nbits == 36){info.tagsize = 0.20;}
+                else if (det->id == 5 && det->family->nbits == 36){info.tagsize = 0.40;}
                 else if ((det->id == 0 || det->id == 1 || det->id == 2 || det->id == 3) && det->family->nbits == 16){info.tagsize = 0.09;}
                 else {continue;}
 		        apriltag_pose_t pose;
@@ -336,7 +337,7 @@ int VisionNode::run() {
     // remove apriltag stuff
 	apriltag_detector_destroy(td);
 	tag16h5_destroy(tf);
-
+    tag36h11_destroy(tf_2);
 }
 
 

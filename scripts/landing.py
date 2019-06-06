@@ -21,6 +21,11 @@ formation[(0, 9)] = 0.345
 formation[(1, 9)] = 0.345 + 0.25
 formation[(2, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
 formation[(3, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
+formation[(0, 5)] = 1.082
+formation[(1, 5)] = 1.082 + 0.25
+formation[(2, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
+formation[(3, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
+formation[(9, 5)] = 1.082 - 0.345
 center_id = 0
 
 
@@ -34,6 +39,7 @@ class Landing():
         self.tag_rotation = []
 
         self.target_id = -1
+        self.target_num = 0
         self.target_x = 0
         self.target_y = 0
         self.target_z = 0
@@ -77,69 +83,86 @@ class Landing():
                         _key = (self.tag_id[i], self.tag_id[j])
                         _position_i = self.tag_position[self.tag_id[i]]
                         _position_j = self.tag_position[self.tag_id[j]]
-                        _distance_ij = math.sqrt(
-                            (_position_i[0] - _position_j[0]) ** 2 + (_position_i[1] - _position_j[1]) ** 2 + (
-                                    _position_i[2] - _position_j[2]) ** 2)
+                        _distance_ij = math.sqrt((_position_i[0] - _position_j[0]) ** 2 + (_position_i[1] - _position_j[1]) ** 2 + (_position_i[2] - _position_j[2]) ** 2)
                         if abs(_distance_ij - formation[_key]) > 0.10:
                             formation_match = False
 
-                if formation_match:
-                    if center_id in self.tag_id:
-                        _selected_id = center_id
-                        _position = self.tag_position[center_id]
-                        _rotation = self.tag_rotation[center_id]
-
-                    else:
-                        _selected_id = self.tag_id[0]
-                        _position = self.tag_position[self.tag_id[0]]
-                        _rotation = self.tag_rotation[self.tag_id[0]]
-
             if len(self.tag_id) == 1:
                 formation_match = True
-                _selected_id = self.tag_id[0]
-                _position = self.tag_position[self.tag_id[0]]
-                _rotation = self.tag_rotation[self.tag_id[0]]
 
             if formation_match:
-                self.target_id = _selected_id
-                tag_yaw = _rotation[0]
-                self.target_yaw = tag_yaw
-                self.target_z = _position[2]
-                if _selected_id == center_id:
-                    self.target_x = _position[0]
-                    self.target_y = _position[1]
-                elif _selected_id == 1:
-                    self.target_x = _position[0] - 0.25 * math.sin(tag_yaw)
-                    self.target_y = _position[1] + 0.25 * math.cos(tag_yaw)
-                elif _selected_id == 2:
-                    self.target_x = _position[0] - 0.25 * math.cos(tag_yaw)
-                    self.target_y = _position[1] - 0.25 * math.sin(tag_yaw)
-                elif _selected_id == 3:
-                    self.target_x = _position[0] + 0.25 * math.cos(tag_yaw)
-                    self.target_y = _position[1] + 0.25 * math.sin(tag_yaw)
-                elif _selected_id == 9:
-                    self.target_x = _position[0] + 0.345 * math.sin(tag_yaw)
-                    self.target_y = _position[1] - 0.345 * math.cos(tag_yaw)
+                self.target_num = len(self.tag_id)
+                final_x = 0
+                final_y = 0
+                final_z = 0
+                final_yaw = 0
+                for i in range(len(self.tag_id)):
+                    _id = self.tag_id[i]
+                    _position = self.tag_position[_id]
+                    _rotation = self.tag_rotation[_id]
+
+                    _tag_yaw = _rotation[0]
+                    if _id == center_id:
+                        _center_x = _position[0]
+                        _center_y = _position[1]
+
+                    elif _id == 1:
+                        _center_x = _position[0] - 0.25 * math.sin(_tag_yaw)
+                        _center_y = _position[1] + 0.25 * math.cos(_tag_yaw)
+
+                    elif _id == 2:
+                        _center_x = _position[0] - 0.25 * math.cos(_tag_yaw)
+                        _center_y = _position[1] - 0.25 * math.sin(_tag_yaw)
+
+                    elif _id == 3:
+                        _center_x = _position[0] + 0.25 * math.cos(_tag_yaw)
+                        _center_y = _position[1] + 0.25 * math.sin(_tag_yaw)
+
+                    elif _id == 9:
+                        _center_x = _position[0] + 0.345 * math.sin(_tag_yaw)
+                        _center_y = _position[1] - 0.345 * math.cos(_tag_yaw)
+
+                    elif _id == 5:
+                        _center_x = _position[0] + 1.082 * math.sin(_tag_yaw)
+                        _center_y = _position[1] - 1.082 * math.cos(_tag_yaw)
+
+                    _center_z = _position[2]
+
+                    final_x = final_x + _center_x
+                    final_y = final_y + _center_y
+                    final_z = final_z + _center_z
+                    final_yaw = final_yaw + _tag_yaw
+
+                final_x = final_x / len(self.tag_id)
+                final_y = final_y / len(self.tag_id)
+                final_z = final_z / len(self.tag_id)
+                final_yaw = final_yaw / len(self.tag_id)
+
+                self.target_x = final_x
+                self.target_y = final_y
+                self.target_z = final_z
+                self.target_yaw = final_yaw
+
 
     ## Process Functions
     def publish(self):
         """ publish target point for landing """
         msg = Targetpoint()
 
-        if self.target_id == -1:
-            msg.id = -1
+        if self.target_num == 0:
+            msg.num = 0
             msg.x = 0
             msg.y = 0
             msg.z = 0
             msg.yaw = 0
         else:
-            msg.id = self.target_id
+            msg.num = self.target_num
             msg.x = - self.target_y
             msg.y = - self.target_x
             msg.z = self.target_z
             msg.yaw = - self.target_yaw - math.pi / 2
 
-        self.target_id = -1
+        self.target_num = 0
 
         self.target_pub.publish(msg)
 
