@@ -150,13 +150,13 @@ class Landing():
         msg = Targetpoint()
 
         if self.target_num == 0:
-            msg.num = 0
+            msg.N = 0
             msg.x = 0
             msg.y = 0
             msg.z = 0
             msg.yaw = 0
         else:
-            msg.num = self.target_num
+            msg.N = self.target_num
             msg.x = - self.target_y
             msg.y = - self.target_x
             msg.z = self.target_z
