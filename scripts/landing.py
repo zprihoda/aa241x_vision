@@ -25,7 +25,7 @@ formation[(0, 5)] = 1.082
 formation[(1, 5)] = 1.082 + 0.25
 formation[(2, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
 formation[(3, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
-formation[(9, 5)] = 1.082 - 0.345
+formation[(5, 9)] = 1.082 - 0.345
 center_id = 0
 
 
