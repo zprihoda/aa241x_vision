@@ -12,10 +12,10 @@
     </node>
 
     <!-- start the display node for displaying the images -->
-    <node pkg="aa241x_vision" type="display_node" name="display_node" output="screen">
+    <!--node pkg="aa241x_vision" type="display_node" name="display_node" output="screen">
         <param name="frame_width" value="$(arg frame_width)" />
         <param name="frame_height" value="$(arg frame_height)" />
-    </node>
+    </node-->
 
     <node pkg="aa241x_vision" type="landing.py" name="landing_node" output="screen"/>
 
