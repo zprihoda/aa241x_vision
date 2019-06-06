@@ -21,11 +21,11 @@ formation[(0, 9)] = 0.345
 formation[(1, 9)] = 0.345 + 0.25
 formation[(2, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
 formation[(3, 9)] = math.sqrt(0.345 ** 2 + 0.25 ** 2)
-formation[(0, 5)] = 1.082
-formation[(1, 5)] = 1.082 + 0.25
-formation[(2, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
-formation[(3, 5)] = math.sqrt(1.082 ** 2 + 0.25 ** 2)
-formation[(5, 9)] = 1.082 - 0.345
+formation[(0, 5)] = 1.088
+formation[(1, 5)] = 1.088 + 0.25
+formation[(2, 5)] = math.sqrt(1.088 ** 2 + 0.25 ** 2)
+formation[(3, 5)] = math.sqrt(1.088 ** 2 + 0.25 ** 2)
+formation[(5, 9)] = 1.088 - 0.345
 center_id = 0
 
 
@@ -123,8 +123,8 @@ class Landing():
                         _center_y = _position[1] - 0.345 * math.cos(_tag_yaw)
 
                     elif _id == 5:
-                        _center_x = _position[0] + 1.082 * math.sin(_tag_yaw)
-                        _center_y = _position[1] - 1.082 * math.cos(_tag_yaw)
+                        _center_x = _position[0] + 1.088 * math.sin(_tag_yaw)
+                        _center_y = _position[1] - 1.088 * math.cos(_tag_yaw)
 
                     _center_z = _position[2]
 
@@ -167,7 +167,7 @@ class Landing():
         self.target_pub.publish(msg)
 
     def run(self):
-        rate = rospy.Rate(2)  # 10 Hz
+        rate = rospy.Rate(5)  # 10 Hz
         while not rospy.is_shutdown():
             self.landcommand()
             self.publish()
